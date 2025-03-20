@@ -1,0 +1,460 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:open_frame_a207/widgets/app_bar_open_frame.dart';
+
+import '../../blocs/notes_cubit_open_frame.dart';
+import '../../blocs/notes_state_open_frame.dart';
+import 'add_edit_note_screen_open_frame.dart';
+import 'models/notes_model_open_frame.dart';
+import 'package:intl/intl.dart';
+
+class NotesScreenOpenFrame extends StatefulWidget {
+  @override
+  State<NotesScreenOpenFrame> createState() => _NotesScreenOpenFrameState();
+}
+
+class _NotesScreenOpenFrameState extends State<NotesScreenOpenFrame> {
+  final List<String> categories = [
+    "All",
+    "Important",
+    "Urgent",
+    "Think about it",
+  ];
+  String formatDate(DateTime date) {
+    return DateFormat("dd.MM.yyyy, HH:mm").format(date);
+  }
+
+  String selectedCategory = "All";
+  int countNotes = 0;
+
+  // Кубитти алуу жана санын алуу
+  Future<void> _fetchTotalNotesCount(BuildContext context) async {
+    int count = await context.read<NotesCubitOpenFrame>().getTotalNotesCount();
+    setState(() {
+      countNotes = count;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NotesCubitOpenFrame>().loadNotes();
+    });
+    _fetchTotalNotesCount(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFFF7F7F7),
+      appBar: CustomAppBar(title: 'Notes'),
+      body: BlocBuilder<NotesCubitOpenFrame, NotesStateOpenFrame>(
+        builder: (context, state) {
+          List<Note> notes = [];
+          if (state is NotesLoaded) {
+            notes =
+                state.notes
+                    .where(
+                      (note) =>
+                          selectedCategory == "All" ||
+                          note.category == selectedCategory,
+                    )
+                    .toList();
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                countNotes > 0
+                    ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: SizedBox(
+                        height: 40,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children:
+                              categories.map((category) {
+                                final bool isSelected =
+                                    selectedCategory == category;
+
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        selectedCategory = category;
+                                      });
+                                      context
+                                          .read<NotesCubitOpenFrame>()
+                                          .filterNotes(category);
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
+                                      ),
+                                      decoration: ShapeDecoration(
+                                        color:
+                                            isSelected
+                                                ? const Color(0xFF4FC3F7)
+                                                : Colors.transparent,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          side: BorderSide(
+                                            color:
+                                                isSelected
+                                                    ? Colors.transparent
+                                                    : const Color(0xFF4FC3F7),
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        category,
+                                        style: TextStyle(
+                                          color:
+                                              isSelected
+                                                  ? Colors.white
+                                                  : const Color(0xFF4FC3F7),
+                                          fontSize: 13,
+                                          fontFamily: 'SF Pro',
+                                          fontWeight: FontWeight.w600,
+                                          height: 1.38,
+                                          letterSpacing: -0.08,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                        ),
+                      ),
+                    )
+                    : SizedBox(),
+
+                Expanded(
+                  child:
+                      state is NotesLoaded
+                          ? (notes.isNotEmpty
+                              ? ListView.builder(
+                                itemCount: notes.length,
+                                itemBuilder: (context, index) {
+                                  final note = notes[index];
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  AddEditNoteScreenOpenFrame(
+                                                    note: note,
+                                                    noteIndex: index,
+                                                  ),
+                                        ),
+                                      );
+                                    },
+                                    child: Dismissible(
+                                      key: Key(note.title),
+                                      direction: DismissDirection.endToStart,
+                                      background: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          borderRadius: BorderRadius.only(
+                                            topRight: Radius.circular(16),
+                                            bottomRight: Radius.circular(16),
+                                          ),
+                                        ),
+                                        alignment: Alignment.centerRight,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                        ),
+                                        child: SvgPicture.asset(
+                                          'assets/icons/delete.svg',
+                                          width: 24,
+                                        ),
+                                      ),
+                                      onDismissed: (direction) async {
+                                        context
+                                            .read<NotesCubitOpenFrame>()
+                                            .deleteNote(index);
+
+                                        setState(() {
+                                          notes.removeAt(index);
+                                        });
+
+                                        _fetchTotalNotesCount(context);
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    note.title,
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 17,
+                                                      fontFamily: 'SF Pro',
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      height: 1.29,
+                                                      letterSpacing: -0.43,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: getCategoryColor(
+                                                      note.category,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          4,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    note.category,
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 13,
+                                                      fontFamily: 'SF Pro',
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      height: 1.38,
+                                                      letterSpacing: -0.08,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 6),
+
+                                            // Дата
+                                            Text(
+                                              formatDate(
+                                                DateTime.parse(note.date),
+                                              ),
+                                              style: TextStyle(
+                                                color: const Color(0xFF8E8E93),
+                                                fontSize: 13,
+                                                fontFamily: 'SF Pro',
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.38,
+                                                letterSpacing: -0.08,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+
+                                            // Контент
+                                            Text(
+                                              note.content,
+                                              maxLines: 3,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: const Color(0xFF8E8E93),
+                                                fontSize: 13,
+                                                fontFamily: 'SF Pro',
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.38,
+                                                letterSpacing: -0.08,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                              : Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/icons/notes.svg',
+                                        width: 120,
+                                        height: 120,
+                                      ),
+                                      Text(
+                                        countNotes < 1
+                                            ? 'No added notes yet'
+                                            : 'No “Think about it” notes added yet',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.black /* Grays-Black */,
+                                          fontSize: 22,
+                                          fontFamily: 'SF Pro',
+                                          fontWeight: FontWeight.w700,
+                                          height: 1.27,
+                                          letterSpacing: -0.26,
+                                        ),
+                                      ),
+                                      if (countNotes < 1)
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            SizedBox(height: 30),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              height:
+                                                  50, // Бираз бийиктик коштук
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder:
+                                                          (context) =>
+                                                              const AddEditNoteScreenOpenFrame(),
+                                                    ),
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  elevation: 0,
+                                                  backgroundColor: const Color(
+                                                    0xFF4FC3F7,
+                                                  ), // FAB түстүү болот
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          16,
+                                                        ), // Жээк бурчтарын жумшартуу
+                                                  ),
+                                                ),
+                                                child: const Text(
+                                                  "Add Note",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 17,
+                                                    fontFamily: 'SF Pro',
+                                                    fontWeight: FontWeight.w600,
+                                                    height: 1.29,
+                                                    letterSpacing: -0.43,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ))
+                          : const Center(child: CircularProgressIndicator()),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+
+      bottomNavigationBar:
+          countNotes > 0
+              ? Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 50,
+                  left: 10,
+                  right: 10,
+                ), // 20px өйдө көтөрдүк
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50, // Бираз бийиктик коштук
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => const AddEditNoteScreenOpenFrame(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: const Color(
+                        0xFF4FC3F7,
+                      ), // FAB түстүү болот
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          16,
+                        ), // Жээк бурчтарын жумшартуу
+                      ),
+                    ),
+                    child: const Text(
+                      "Add Note",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontFamily: 'SF Pro',
+                        fontWeight: FontWeight.w600,
+                        height: 1.29,
+                        letterSpacing: -0.43,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              : null,
+    );
+  }
+
+  Color getCategoryColor(String category) {
+    switch (category) {
+      case "Important":
+        return Color(0xFFFF9500);
+      case "Urgent":
+        return Color(0xFFFF3B30);
+      case "Think about it":
+        return Color(0xFF34C759);
+      case "Work":
+        return Colors.blueAccent;
+      case "Personal":
+        return Colors.purple;
+      case "Health":
+        return Colors.teal;
+      default:
+        return Colors.grey;
+    }
+  }
+}

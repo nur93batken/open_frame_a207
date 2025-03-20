@@ -9,6 +9,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actionIconPath,
     this.onLeadingPressed,
     this.onActionPressed,
+    this.color,
   });
 
   final String title;
@@ -16,6 +17,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? actionIconPath;
   final VoidCallback? onLeadingPressed;
   final VoidCallback? onActionPressed;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -25,19 +27,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           leadingIconPath != null
               ? IconButton(
                 onPressed: onLeadingPressed ?? () => Navigator.pop(context),
-                icon: SvgPicture.asset(
-                  leadingIconPath!,
-                  width: 24,
-                  height: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.srcIn,
-                  ),
-                ),
+                icon: SvgPicture.asset(leadingIconPath!, width: 24, height: 24),
               )
               : null,
       title: Text(
         title,
+        textAlign: TextAlign.center,
         style: TextStyle(
           color: Colors.black /* Grays-Black */,
           fontSize: 20,
@@ -55,10 +50,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               actionIconPath!,
               width: 24,
               height: 24,
-              colorFilter: const ColorFilter.mode(
-                Colors.white,
-                BlendMode.srcIn,
-              ),
+              color: color,
             ),
           ),
       ],
