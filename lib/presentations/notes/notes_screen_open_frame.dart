@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:open_frame_a207/widgets/app_bar_open_frame.dart';
 
 import '../../blocs/notes_cubit_open_frame.dart';
 import '../../blocs/notes_state_open_frame.dart';
+import '../../widgets/show_cupertino_dialog_open_fram.dart';
 import 'add_edit_note_screen_open_frame.dart';
 import 'models/notes_model_open_frame.dart';
 import 'package:intl/intl.dart';
 
 class NotesScreenOpenFrame extends StatefulWidget {
+  const NotesScreenOpenFrame({super.key});
+
   @override
   State<NotesScreenOpenFrame> createState() => _NotesScreenOpenFrameState();
 }
@@ -163,38 +167,53 @@ class _NotesScreenOpenFrameState extends State<NotesScreenOpenFrame> {
                                         ),
                                       );
                                     },
-                                    child: Dismissible(
+                                    child: Slidable(
                                       key: Key(note.title),
-                                      direction: DismissDirection.endToStart,
-                                      background: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          borderRadius: BorderRadius.only(
-                                            topRight: Radius.circular(16),
-                                            bottomRight: Radius.circular(16),
+                                      endActionPane: ActionPane(
+                                        motion:
+                                            const BehindMotion(), // ✅ Smooth ачылыш үчүн
+                                        children: [
+                                          SlidableAction(
+                                            onPressed: (dialogContext) {
+                                              final notesCubit =
+                                                  dialogContext
+                                                      .read<
+                                                        NotesCubitOpenFrame
+                                                      >(); // ✅ Алдын ала сактап коёбуз
+
+                                              showCupertinoDialogOpenFrame(
+                                                dialogContext,
+                                                'Delete note',
+                                                'If you delete this note, you will not be able to restore it',
+                                                'Delete',
+                                                'Cancel',
+                                                const Color(0xFFFF3B30),
+                                                () {
+                                                  // ✅ Flutter иштеп жаткан учурда Cubit чакырабыз
+                                                  WidgetsBinding.instance
+                                                      .addPostFrameCallback((
+                                                        _,
+                                                      ) {
+                                                        if (mounted) {
+                                                          notesCubit.deleteNote(
+                                                            index,
+                                                          ); // ✅ `context`'сиз колдонуу
+                                                        }
+                                                      });
+                                                },
+                                              );
+                                            },
+
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
+                                            icon: Icons.delete,
                                           ),
-                                        ),
-                                        alignment: Alignment.centerRight,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                        ),
-                                        child: SvgPicture.asset(
-                                          'assets/icons/delete.svg',
-                                          width: 24,
-                                        ),
+                                        ],
                                       ),
-                                      onDismissed: (direction) async {
-                                        context
-                                            .read<NotesCubitOpenFrame>()
-                                            .deleteNote(index);
-
-                                        setState(() {
-                                          notes.removeAt(index);
-                                        });
-
-                                        _fetchTotalNotesCount(context);
-                                      },
                                       child: Container(
+                                        margin: const EdgeInsets.only(
+                                          bottom: 8,
+                                        ),
                                         padding: const EdgeInsets.all(16),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
@@ -216,7 +235,7 @@ class _NotesScreenOpenFrameState extends State<NotesScreenOpenFrame> {
                                                 Expanded(
                                                   child: Text(
                                                     note.title,
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                       color: Colors.black,
                                                       fontSize: 17,
                                                       fontFamily: 'SF Pro',
@@ -248,7 +267,7 @@ class _NotesScreenOpenFrameState extends State<NotesScreenOpenFrame> {
                                                   ),
                                                   child: Text(
                                                     note.category,
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                       color: Colors.white,
                                                       fontSize: 13,
                                                       fontFamily: 'SF Pro',
@@ -262,14 +281,12 @@ class _NotesScreenOpenFrameState extends State<NotesScreenOpenFrame> {
                                               ],
                                             ),
                                             const SizedBox(height: 6),
-
-                                            // Дата
                                             Text(
                                               formatDate(
                                                 DateTime.parse(note.date),
                                               ),
-                                              style: TextStyle(
-                                                color: const Color(0xFF8E8E93),
+                                              style: const TextStyle(
+                                                color: Color(0xFF8E8E93),
                                                 fontSize: 13,
                                                 fontFamily: 'SF Pro',
                                                 fontWeight: FontWeight.w400,
@@ -278,14 +295,12 @@ class _NotesScreenOpenFrameState extends State<NotesScreenOpenFrame> {
                                               ),
                                             ),
                                             const SizedBox(height: 12),
-
-                                            // Контент
                                             Text(
                                               note.content,
                                               maxLines: 3,
                                               overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color: const Color(0xFF8E8E93),
+                                              style: const TextStyle(
+                                                color: Color(0xFF8E8E93),
                                                 fontSize: 13,
                                                 fontFamily: 'SF Pro',
                                                 fontWeight: FontWeight.w400,
@@ -393,7 +408,7 @@ class _NotesScreenOpenFrameState extends State<NotesScreenOpenFrame> {
           countNotes > 0
               ? Padding(
                 padding: const EdgeInsets.only(
-                  bottom: 50,
+                  bottom: 24,
                   left: 10,
                   right: 10,
                 ), // 20px өйдө көтөрдүк

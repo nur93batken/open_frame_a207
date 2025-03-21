@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_frame_a207/widgets/app_bar_open_frame.dart';
+import 'package:open_frame_a207/widgets/show_cupertino_dialog_open_fram.dart';
 import '../../blocs/notes_cubit_open_frame.dart';
 import 'models/notes_model_open_frame.dart';
 
@@ -50,16 +51,42 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreenOpenFrame> {
         appBar: CustomAppBar(
           title: widget.note == null ? 'Add Note' : 'Edit Note',
           leadingIconPath: 'assets/icons/btn_back.svg',
-          onLeadingPressed: () => Navigator.pop(context),
+          onLeadingPressed: () {
+            _isButtonEnabled
+                ? showCupertinoDialogOpenFrame(
+                  context,
+                  'Leave the page',
+                  'Are you sure you want to get out? This note will not be added',
+                  'Leave',
+                  'Cancel',
+                  Colors.blue,
+                  () {
+                    Navigator.pop(context);
+                  },
+                )
+                : Navigator.pop(context);
+          },
           actionIconPath:
               widget.note == null ? null : 'assets/icons/delete.svg',
           color: Colors.red,
           onActionPressed: () {
             if (widget.note != null) {
-              BlocProvider.of<NotesCubitOpenFrame>(
+              showCupertinoDialogOpenFrame(
                 context,
-              ).deleteNote(widget.noteIndex!);
-              Navigator.pop(context);
+
+                'Delete note',
+                'If you delete this note, you will not be able to restore it',
+                'Delete',
+                'Cancel',
+                Color(0xFFFF3B30),
+
+                () {
+                  BlocProvider.of<NotesCubitOpenFrame>(
+                    context,
+                  ).deleteNote(widget.noteIndex!);
+                  Navigator.pop(context);
+                },
+              );
             }
           },
         ),
@@ -320,7 +347,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreenOpenFrame> {
               alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: const EdgeInsets.only(
-                  bottom: 24,
+                  bottom: 36,
                   left: 16,
                   right: 16,
                 ), // Өйдө жылдыруу
