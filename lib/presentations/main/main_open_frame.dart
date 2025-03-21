@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_frame_a207/presentations/notes/notes_screen_open_frame.dart';
+import 'package:open_frame_a207/presentations/projects/projects_screen_open_frame.dart';
 import 'package:open_frame_a207/presentations/settings/setting_open_frame.dart';
 
 import '../statics/personal_statistics_screen_open_frame.dart';
@@ -14,7 +15,7 @@ class MainScreenOpenFrame extends StatefulWidget {
 class _MainScreenOpenFrameState extends State<MainScreenOpenFrame> {
   int currentIndex = 0;
   final List<Widget> pages = [
-    Scaffold(),
+    ProjectsScreenOpenFrame(),
     NotesScreenOpenFrame(),
     PersonalStatisticsScreenOpenFrame(),
     SettingPageOpenFrame(),
