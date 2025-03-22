@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:open_frame_a207/blocs/project_cubit.dart';
+import 'package:open_frame_a207/presentations/projects/models/poject_model_open_frame.dart';
 
 import 'blocs/notes_cubit_open_frame.dart';
 import 'presentations/main/splash_screen_open_frame.dart';
@@ -12,17 +14,24 @@ void main() async {
   await Hive.initFlutter();
 
   Hive.registerAdapter(NoteAdapter());
+  Hive.registerAdapter(ProjectAdapter());
+  Hive.registerAdapter(ProjectResultAdapter());
+  final projectsBox = await Hive.openBox<Project>('projectsBox');
 
-  runApp(const MyApp());
+  runApp(MyApp(projectsBox: projectsBox));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Box<Project> projectsBox;
 
+  const MyApp({super.key, required this.projectsBox});
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [BlocProvider(create: (context) => NotesCubitOpenFrame())],
+      providers: [
+        BlocProvider(create: (context) => NotesCubitOpenFrame()),
+        BlocProvider(create: (context) => ProjectCubit(projectsBox)),
+      ],
       child: ScreenUtilInit(
         designSize: const Size(375, 812),
         child: MaterialApp(
