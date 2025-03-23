@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar({
+class CustomAppBarOpenFrame extends StatelessWidget
+    implements PreferredSizeWidget {
+  const CustomAppBarOpenFrame({
     super.key,
     required this.title,
     this.leadingIconPath,
