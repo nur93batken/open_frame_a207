@@ -15,6 +15,13 @@ class ProjectCubit extends Cubit<List<Project>> {
   final Box<Project> _projectsBox;
   ProjectCubit(this._projectsBox) : super(_projectsBox.values.toList());
 
+  Future<int> load() async {
+    var box = await Hive.openBox<Project>('projectsBox');
+    var projects = box.values.toList();
+    emit(projects);
+    return projects.length;
+  }
+
   Future<void> addProjectWithPhotos(
     Project project,
     List<XFile> photosBefore,
@@ -53,16 +60,6 @@ class ProjectCubit extends Cubit<List<Project>> {
     return savedFile.path;
   }
 
-  void updateProject(int index, Project updatedproject) async {
-    try {
-      await _projectsBox.putAt(index, updatedproject);
-
-      emit(_projectsBox.values.toList());
-    } catch (e) {
-      throw Exception();
-    }
-  }
-
   Future<List<XFile>> pickImages() async {
     if (_isPicking) return []; // Если уже идёт процесс, просто выходим
     _isPicking = true;
@@ -83,17 +80,35 @@ class ProjectCubit extends Cubit<List<Project>> {
     }
   }
 
-  void deleteProject(int index) async {
-    try {
-      await _projectsBox.delete(index);
+  int _getKeyByIndex(int listIndex) {
+    if (listIndex < 0 || listIndex >= _projectsBox.length) {
+      throw RangeError.index(listIndex, _projectsBox.values);
+    }
+    return _projectsBox.keyAt(listIndex) as int;
+  }
 
-      emit(_projectsBox.values.toList());
+  void deleteProject(int listIndex) async {
+    try {
+      final key = _getKeyByIndex(listIndex);
+      await _projectsBox.delete(key);
+      emit(_projectsBox.values.toList()); // Обновляем состояние
     } catch (e) {
-      throw Exception();
+      throw Exception('Delete error: ${e.toString()}');
     }
   }
 
-  Project getProject(int index) {
-    return _projectsBox.getAt(index)!;
+  // Обновляем другие методы для работы с ключами
+  void updateProject(int listIndex, Project updatedProject) async {
+    try {
+      final key = _getKeyByIndex(listIndex);
+      await _projectsBox.put(key, updatedProject);
+      emit(_projectsBox.values.toList());
+    } catch (e) {
+      throw Exception('Update error: ${e.toString()}');
+    }
+  }
+
+  Project getProject(int listIndex) {
+    return _projectsBox.get(_getKeyByIndex(listIndex))!;
   }
 }

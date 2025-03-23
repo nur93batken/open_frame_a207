@@ -21,132 +21,142 @@ class ProjectsScreenOpenFrame extends StatefulWidget {
 }
 
 class _ProjectsScreenOpenFrameState extends State<ProjectsScreenOpenFrame> {
-  // По умолчанию выбран "All"
+  // Текущий выбранный фильтр (All / Better / No Change / Worse)
   String selectedFilter = 'All';
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          backgroundColor: const Color(0xffF7F7F7),
-          appBar: CustomAppBarOpenFrame(title: 'Projects'),
-          body: BlocBuilder<ProjectCubit, List<Project>>(
-            builder: (context, projects) {
-              // Если вообще нет проектов
-              if (projects.isEmpty) {
-                return _EmptyProjectsPlaceholder();
-              }
+    return BlocBuilder<ProjectCubit, List<Project>>(
+      builder: (context, projects) {
+        // Определяем, есть ли хотя бы один проект
+        final hasProjects = projects.isNotEmpty;
 
-              // Если есть проекты, сначала фильтруем их
-              final filteredProjects = _filterProjects(projects);
+        return Stack(
+          children: [
+            // Основной Scaffold
+            Scaffold(
+              backgroundColor: const Color(0xffF7F7F7),
+              appBar: CustomAppBarOpenFrame(title: 'Projects'),
+              body: _buildBody(context, projects),
+            ),
 
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // ---- Ряд кнопок-фильтров ----
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _FilterButton(
-                            label: 'All',
-                            isSelected: (selectedFilter == 'All'),
-                            onTap: () => setState(() => selectedFilter = 'All'),
-                          ),
-                          _FilterButton(
-                            label: 'Better',
-                            isSelected: (selectedFilter == 'Better'),
-                            onTap:
-                                () => setState(() => selectedFilter = 'Better'),
-                          ),
-                          _FilterButton(
-                            label: 'No Change',
-                            isSelected: (selectedFilter == 'No Change'),
-                            onTap:
-                                () => setState(
-                                  () => selectedFilter = 'No Change',
-                                ),
-                          ),
-                          _FilterButton(
-                            label: 'Worse',
-                            isSelected: (selectedFilter == 'Worse'),
-                            onTap:
-                                () => setState(() => selectedFilter = 'Worse'),
-                          ),
-                        ],
+            // Если есть проекты, показываем закреплённую кнопку "Add Project" снизу
+            if (hasProjects)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 15,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
                       ),
+                      backgroundColor: const Color(0xFF4FC3F7),
                     ),
-
-                    // ---- Список или заглушка ----
-                    filteredProjects.isEmpty
-                        ? _WhenIsEmpty(
-                          message:
-                              (selectedFilter == 'All')
-                                  ? 'No added projects yet'
-                                  : 'No "$selectedFilter" projects \nadded yet',
-                        )
-                        : ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: filteredProjects.length,
-                          itemBuilder: (context, index) {
-                            final project = filteredProjects[index];
-                            return _ProjectCard(
-                              project: project,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (ctx) => EditProjectOpenFrame(
-                                          projectIndex: index,
-                                          existingProject: project,
-                                        ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (ctx) => const AddProjectOpenFrame(),
                         ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 15,
-
-          child: Padding(
-            padding: const EdgeInsets.only(right: 16, left: 16),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                backgroundColor: const Color(0xFF4FC3F7),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (ctx) => const AddProjectOpenFrame(),
+                      );
+                    },
+                    child: const Text(
+                      'Add Project',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
                   ),
-                );
-              },
-              child: const Text(
-                'Add Project',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
               ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Основное содержимое body в зависимости от наличия проектов
+  Widget _buildBody(BuildContext context, List<Project> projects) {
+    // Если вообще нет проектов
+    if (projects.isEmpty) {
+      return const _EmptyProjectsPlaceholder();
+    }
+
+    // Иначе фильтруем
+    final filteredProjects = _filterProjects(projects);
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // ---- Ряд кнопок-фильтров ----
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _FilterButton(
+                  label: 'All',
+                  isSelected: (selectedFilter == 'All'),
+                  onTap: () => setState(() => selectedFilter = 'All'),
+                ),
+                _FilterButton(
+                  label: 'Better',
+                  isSelected: (selectedFilter == 'Better'),
+                  onTap: () => setState(() => selectedFilter = 'Better'),
+                ),
+                _FilterButton(
+                  label: 'No Change',
+                  isSelected: (selectedFilter == 'No Change'),
+                  onTap: () => setState(() => selectedFilter = 'No Change'),
+                ),
+                _FilterButton(
+                  label: 'Worse',
+                  isSelected: (selectedFilter == 'Worse'),
+                  onTap: () => setState(() => selectedFilter = 'Worse'),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+
+          // ---- Список проектов или заглушка ----
+          if (filteredProjects.isEmpty)
+            _WhenIsEmpty(
+              message:
+                  (selectedFilter == 'All')
+                      ? 'No added projects yet'
+                      : 'No "$selectedFilter" projects \nadded yet',
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: filteredProjects.length,
+              itemBuilder: (context, index) {
+                final project = filteredProjects[index];
+                return _ProjectCard(
+                  project: project,
+                  onTap: () {
+                    // Переход на экран редактирования
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (ctx) => EditProjectOpenFrame(
+                              projectIndex: index,
+                              existingProject: project,
+                            ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+
+          const SizedBox(height: 75), // Отступ под плавающую кнопку
+        ],
+      ),
     );
   }
 
@@ -155,14 +165,13 @@ class _ProjectsScreenOpenFrameState extends State<ProjectsScreenOpenFrame> {
     if (selectedFilter == 'All') {
       return projects;
     }
-
     final resultEnum = mapStringToProjectResult(selectedFilter);
     // Оставляем только проекты, у которых result совпадает
     return projects.where((p) => p.result == resultEnum).toList();
   }
 }
 
-/// Заглушка, если в Hive совсем нет проектов
+/// Заглушка, если вообще нет проектов
 class _EmptyProjectsPlaceholder extends StatelessWidget {
   const _EmptyProjectsPlaceholder();
 
@@ -187,7 +196,7 @@ class _EmptyProjectsPlaceholder extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
-                backgroundColor: const Color(0xFF4FC3F7),
+                backgroundColor: Color(0xFF4FC3F7),
               ),
               onPressed: () {
                 // Переход на экран добавления
@@ -272,6 +281,7 @@ class _FilterButton extends StatelessWidget {
   }
 }
 
+/// Карточка проекта
 class _ProjectCard extends StatelessWidget {
   final Project project;
   final VoidCallback onTap;
@@ -286,7 +296,6 @@ class _ProjectCard extends StatelessWidget {
         color: Colors.white,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 2,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -329,6 +338,7 @@ class _ProjectCard extends StatelessWidget {
                             height: 122,
                             child: ListView.separated(
                               shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               itemCount: project.photosBefore.length,
                               separatorBuilder:
@@ -337,9 +347,7 @@ class _ProjectCard extends StatelessWidget {
                                   (context, index) => GestureDetector(
                                     onTap: () {
                                       final allImages = project.photosBefore;
-                                      final initialIndex =
-                                          index; // если хотим открыть именно это фото
-
+                                      final initialIndex = index;
                                       showPhotoViewerDialog(
                                         context: context,
                                         images: allImages,
@@ -361,11 +369,7 @@ class _ProjectCard extends StatelessWidget {
                           ),
                         ],
                       ),
-
-                    // --- Если вообще нет фото "до" (по ТЗ можно добавить заглушку,
-                    //     но сейчас её нет) ---
-                    if (project.photosBefore.isEmpty)
-                      const SizedBox(), // Или Text('No "before" photo')
+                    if (project.photosBefore.isEmpty) const SizedBox(),
 
                     const SizedBox(height: 8),
 
@@ -386,6 +390,7 @@ class _ProjectCard extends StatelessWidget {
                             height: 122,
                             child: ListView.separated(
                               shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               itemCount: project.photosAfter.length,
                               separatorBuilder:
@@ -395,7 +400,6 @@ class _ProjectCard extends StatelessWidget {
                                     onTap: () {
                                       final allImages = project.photosAfter;
                                       final initialIndex = index;
-
                                       showPhotoViewerDialog(
                                         context: context,
                                         images: allImages,
@@ -446,15 +450,12 @@ class _ProjectCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Категория
                   Text(
                     project.category,
                     style: const TextStyle(color: Colors.grey),
                   ),
-                  // Метка результата (Better/No Change/Worse)
-                  project.result == null
-                      ? const SizedBox.shrink()
-                      : _ResultBadge(result: project.result),
+                  if (project.result != null)
+                    _ResultBadge(result: project.result),
                 ],
               ),
 
@@ -487,12 +488,10 @@ class _ProjectCard extends StatelessWidget {
               GestureDetector(
                 onTap: () {
                   final allImages = project.photosBefore;
-                  final initialIndex = 0;
-
                   showPhotoViewerDialog(
                     context: context,
                     images: allImages,
-                    initialIndex: initialIndex,
+                    initialIndex: 0,
                     title: 'Before',
                   );
                 },
@@ -510,7 +509,6 @@ class _ProjectCard extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-
         // --- Колонка "After" ---
         Expanded(
           child: Column(
@@ -524,12 +522,10 @@ class _ProjectCard extends StatelessWidget {
               GestureDetector(
                 onTap: () {
                   final allImages = project.photosAfter;
-                  final initialIndex = 0;
-
                   showPhotoViewerDialog(
                     context: context,
                     images: allImages,
-                    initialIndex: initialIndex,
+                    initialIndex: 0,
                     title: 'After',
                   );
                 },
@@ -558,7 +554,6 @@ class _ResultBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Получаем цвет и текст
     final color = _getResultColor(result);
     final text = _getResultText(result);
 
@@ -574,7 +569,6 @@ class _ResultBadge extends StatelessWidget {
     );
   }
 
-  /// Определяем цвет по результату
   Color _getResultColor(ProjectResult? result) {
     switch (result) {
       case ProjectResult.better:
@@ -588,7 +582,6 @@ class _ResultBadge extends StatelessWidget {
     }
   }
 
-  /// Определяем текст по результату
   String _getResultText(ProjectResult? result) {
     switch (result) {
       case ProjectResult.better:
@@ -598,7 +591,7 @@ class _ResultBadge extends StatelessWidget {
       case ProjectResult.worse:
         return 'Worse';
       default:
-        return 'No Result'; // Если result == null
+        return 'No Result';
     }
   }
 }

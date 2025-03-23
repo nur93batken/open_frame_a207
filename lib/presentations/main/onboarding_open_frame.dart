@@ -73,7 +73,7 @@ class _OnboardingOpenFrameState extends State<OnboardingOpenFrame> {
   }
 
   Widget _buildBottomButton(BuildContext context) {
-    bool isLast = (currentPage == 3);
+    bool isLast = (currentPage == 2);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: ElevatedButton(
