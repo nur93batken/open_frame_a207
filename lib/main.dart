@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
       child: ScreenUtilInit(
         designSize: const Size(375, 812),
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'Open Frame A207',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF4FC3F7)),

@@ -239,7 +239,14 @@ class _PhotoViewerDialogState extends State<PhotoViewerDialog> {
         // Само изображение
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: Center(child: Image.file(File(path), fit: BoxFit.cover)),
+          child: Center(
+            child: Image.file(
+              File(path),
+              height: double.infinity,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
         // Текстовый заголовок вверху
         Positioned(

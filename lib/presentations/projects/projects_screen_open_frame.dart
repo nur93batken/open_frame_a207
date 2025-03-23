@@ -338,7 +338,6 @@ class _ProjectCard extends StatelessWidget {
                             height: 122,
                             child: ListView.separated(
                               shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               itemCount: project.photosBefore.length,
                               separatorBuilder:
@@ -390,7 +389,6 @@ class _ProjectCard extends StatelessWidget {
                             height: 122,
                             child: ListView.separated(
                               shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               itemCount: project.photosAfter.length,
                               separatorBuilder:

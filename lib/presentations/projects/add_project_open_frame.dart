@@ -10,6 +10,7 @@ import 'package:open_frame_a207/blocs/project_cubit.dart';
 import 'package:open_frame_a207/presentations/projects/models/poject_model_open_frame.dart';
 import 'package:open_frame_a207/widgets/custom_app_bar_open_frame.dart';
 import 'package:open_frame_a207/widgets/show_cupertino_dialog_open_fram.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AddProjectOpenFrame extends StatefulWidget {
   const AddProjectOpenFrame({super.key});
@@ -43,8 +44,35 @@ class _AddProjectOpenFrameState extends State<AddProjectOpenFrame> {
       (!_showOtherField || _otherCategoryController.text.isNotEmpty) &&
       _selectedPhotosBefore.isNotEmpty;
 
+  Future<bool> _checkPermissions() async {
+    // Проверяем разрешение на доступ к фото и камере
+    PermissionStatus cameraStatus = await Permission.camera.status;
+    PermissionStatus photoLibraryStatus = await Permission.photos.status;
+
+    if (!cameraStatus.isGranted || !photoLibraryStatus.isGranted) {
+      // Запрашиваем разрешения, если их нет
+      PermissionStatus cameraRequest = await Permission.camera.request();
+      PermissionStatus photoLibraryRequest = await Permission.photos.request();
+
+      return cameraRequest.isGranted && photoLibraryRequest.isGranted;
+    }
+
+    return true; // Разрешения уже даны
+  }
+
+  // Методы добавления/удаления фото
   Future<void> _pickImagesBefore() async {
+    bool hasPermissions = await _checkPermissions();
+    if (!hasPermissions) {
+      // Если разрешения не получены, показываем уведомление
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Permission denied to access photos or camera')),
+      );
+      return;
+    }
+
     try {
+      // Если разрешения есть, открываем фото для выбора
       final images = await context.read<ProjectCubit>().pickImages();
       final remainingSlots = 3 - _selectedPhotosBefore.length;
       if (remainingSlots > 0) {
@@ -52,7 +80,7 @@ class _AddProjectOpenFrameState extends State<AddProjectOpenFrame> {
         setState(() => _selectedPhotosBefore.addAll(newImages));
       }
     } catch (e) {
-      (e);
+      debugPrint('pickImagesBefore error: $e');
     }
   }
 
@@ -61,7 +89,17 @@ class _AddProjectOpenFrameState extends State<AddProjectOpenFrame> {
   }
 
   Future<void> _pickImagesAfter() async {
+    bool hasPermissions = await _checkPermissions();
+    if (!hasPermissions) {
+      // Если разрешения не получены, показываем уведомление
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Permission denied to access photos or camera')),
+      );
+      return;
+    }
+
     try {
+      // Если разрешения есть, открываем фото для выбора
       final images = await context.read<ProjectCubit>().pickImages();
       final remainingSlots = 3 - _selectedPhotosAfter.length;
       if (remainingSlots > 0) {
@@ -69,7 +107,7 @@ class _AddProjectOpenFrameState extends State<AddProjectOpenFrame> {
         setState(() => _selectedPhotosAfter.addAll(newImages));
       }
     } catch (e) {
-      (e);
+      debugPrint('pickImagesAfter error: $e');
     }
   }
 

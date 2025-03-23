@@ -8,6 +8,7 @@ import 'package:open_frame_a207/blocs/project_cubit.dart';
 import 'package:open_frame_a207/presentations/projects/models/poject_model_open_frame.dart';
 import 'package:open_frame_a207/widgets/custom_app_bar_open_frame.dart';
 import 'package:open_frame_a207/widgets/show_cupertino_dialog_open_fram.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class EditProjectOpenFrame extends StatefulWidget {
   final int projectIndex; // Индекс проекта в Hive
@@ -142,9 +143,36 @@ class _EditProjectOpenFrameState extends State<EditProjectOpenFrame> {
     super.dispose();
   }
 
+  // Функция для запроса разрешений
+  Future<bool> _checkPermissions() async {
+    // Проверяем разрешение на доступ к фото и камере
+    PermissionStatus cameraStatus = await Permission.camera.status;
+    PermissionStatus photoLibraryStatus = await Permission.photos.status;
+
+    if (!cameraStatus.isGranted || !photoLibraryStatus.isGranted) {
+      // Запрашиваем разрешения, если их нет
+      PermissionStatus cameraRequest = await Permission.camera.request();
+      PermissionStatus photoLibraryRequest = await Permission.photos.request();
+
+      return cameraRequest.isGranted && photoLibraryRequest.isGranted;
+    }
+
+    return true; // Разрешения уже даны
+  }
+
   // Методы добавления/удаления фото
   Future<void> _pickImagesBefore() async {
+    bool hasPermissions = await _checkPermissions();
+    if (!hasPermissions) {
+      // Если разрешения не получены, показываем уведомление
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Permission denied to access photos or camera')),
+      );
+      return;
+    }
+
     try {
+      // Если разрешения есть, открываем фото для выбора
       final images = await context.read<ProjectCubit>().pickImages();
       final remainingSlots = 3 - _selectedPhotosBefore.length;
       if (remainingSlots > 0) {
@@ -152,7 +180,7 @@ class _EditProjectOpenFrameState extends State<EditProjectOpenFrame> {
         setState(() => _selectedPhotosBefore.addAll(newImages));
       }
     } catch (e) {
-      debugPrint('Error picking images (before): $e');
+      debugPrint('pickImagesBefore error: $e');
     }
   }
 
@@ -161,7 +189,17 @@ class _EditProjectOpenFrameState extends State<EditProjectOpenFrame> {
   }
 
   Future<void> _pickImagesAfter() async {
+    bool hasPermissions = await _checkPermissions();
+    if (!hasPermissions) {
+      // Если разрешения не получены, показываем уведомление
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Permission denied to access photos or camera')),
+      );
+      return;
+    }
+
     try {
+      // Если разрешения есть, открываем фото для выбора
       final images = await context.read<ProjectCubit>().pickImages();
       final remainingSlots = 3 - _selectedPhotosAfter.length;
       if (remainingSlots > 0) {
@@ -169,7 +207,7 @@ class _EditProjectOpenFrameState extends State<EditProjectOpenFrame> {
         setState(() => _selectedPhotosAfter.addAll(newImages));
       }
     } catch (e) {
-      debugPrint('Error picking images (after): $e');
+      debugPrint('pickImagesAfter error: $e');
     }
   }
 
@@ -596,7 +634,7 @@ class _PhotoUploadSection extends StatelessWidget {
               if (photos.length < 3) {
                 return _AddPhotoButton(onPressed: onAddPhoto);
               } else {
-                return const SizedBox.shrink();
+                return null;
               }
             }
             return _PhotoItem(
