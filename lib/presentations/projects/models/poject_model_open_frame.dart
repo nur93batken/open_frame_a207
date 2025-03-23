@@ -63,3 +63,16 @@ class Project extends HiveObject {
     );
   }
 }
+
+ProjectResult? mapStringToProjectResult(String? value) {
+  switch (value) {
+    case 'Better':
+      return ProjectResult.better;
+    case 'No Change':
+      return ProjectResult.noChange;
+    case 'Worse':
+      return ProjectResult.worse;
+    default:
+      return null;
+  }
+}

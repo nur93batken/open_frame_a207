@@ -17,7 +17,6 @@ void main() async {
   Hive.registerAdapter(ProjectAdapter());
   Hive.registerAdapter(ProjectResultAdapter());
   final projectsBox = await Hive.openBox<Project>('projectsBox');
-
   runApp(MyApp(projectsBox: projectsBox));
 }
 

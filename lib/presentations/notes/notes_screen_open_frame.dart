@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:open_frame_a207/widgets/app_bar_open_frame.dart';
+import 'package:open_frame_a207/widgets/custom_app_bar_open_frame.dart';
 
 import '../../blocs/notes_cubit_open_frame.dart';
 import '../../blocs/notes_state_open_frame.dart';
@@ -53,7 +53,7 @@ class _NotesScreenOpenFrameState extends State<NotesScreenOpenFrame> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFF7F7F7),
-      appBar: CustomAppBar(title: 'Notes'),
+      appBar: CustomAppBarOpenFrame(title: 'Notes'),
       body: BlocBuilder<NotesCubitOpenFrame, NotesStateOpenFrame>(
         builder: (context, state) {
           List<Note> notes = [];

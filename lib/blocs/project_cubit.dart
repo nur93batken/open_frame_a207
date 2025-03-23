@@ -10,20 +10,33 @@ import 'package:permission_handler/permission_handler.dart';
 
 class ProjectCubit extends Cubit<List<Project>> {
   final ImagePicker _picker = ImagePicker();
+  bool _isPicking = false;
 
   final Box<Project> _projectsBox;
   ProjectCubit(this._projectsBox) : super(_projectsBox.values.toList());
 
-  Future<void> addProjectWithPhotos(Project project, List<XFile> photos) async {
+  Future<void> addProjectWithPhotos(
+    Project project,
+    List<XFile> photosBefore,
+    List<XFile> photosAfter,
+  ) async {
     try {
-      // Сохраняем фото в постоянное хранилище
-      final List<String> savedPaths = [];
-      for (var photo in photos) {
+      final List<String> savedPathBefore = [];
+      for (var photo in photosBefore) {
         final savedPath = await _saveImageToAppDir(photo);
-        savedPaths.add(savedPath);
+        savedPathBefore.add(savedPath);
+      }
+      final List<String> savedPathAfter = [];
+      for (var photo in photosAfter) {
+        final savedPath = await _saveImageToAppDir(photo);
+        savedPathAfter.add(savedPath);
       }
 
-      final newProject = project.copyWith(photosBefore: savedPaths);
+      final newProject = project.copyWith(
+        photosBefore: savedPathBefore,
+        photosAfter: savedPathAfter,
+      );
+
       await _projectsBox.add(newProject);
 
       emit([...state, newProject]);
@@ -51,15 +64,23 @@ class ProjectCubit extends Cubit<List<Project>> {
   }
 
   Future<List<XFile>> pickImages() async {
-    if (await Permission.photos.request().isGranted) {
-      final List<XFile> images = await _picker.pickMultiImage(
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
-      );
-      return images;
+    if (_isPicking) return []; // Если уже идёт процесс, просто выходим
+    _isPicking = true;
+    try {
+      if (await Permission.photos.request().isGranted) {
+        final List<XFile> images = await _picker.pickMultiImage(
+          maxWidth: 1024,
+          maxHeight: 1024,
+          imageQuality: 80,
+        );
+        return images;
+      }
+      return [];
+    } on Exception catch (e) {
+      throw Exception('Failed to pick images: $e');
+    } finally {
+      _isPicking = false;
     }
-    return [];
   }
 
   void deleteProject(int index) async {

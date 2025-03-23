@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_frame_a207/widgets/app_bar_open_frame.dart';
+import 'package:open_frame_a207/widgets/custom_app_bar_open_frame.dart';
 import 'package:open_frame_a207/widgets/show_cupertino_dialog_open_fram.dart';
 import '../../blocs/notes_cubit_open_frame.dart';
 import 'models/notes_model_open_frame.dart';
@@ -48,7 +48,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreenOpenFrame> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         backgroundColor: Color(0xFFF7F7F7),
-        appBar: CustomAppBar(
+        appBar: CustomAppBarOpenFrame(
           title: widget.note == null ? 'Add Note' : 'Edit Note',
           leadingIconPath: 'assets/icons/btn_back.svg',
           onLeadingPressed: () {
