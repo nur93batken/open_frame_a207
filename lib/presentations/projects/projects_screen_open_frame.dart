@@ -26,116 +26,127 @@ class _ProjectsScreenOpenFrameState extends State<ProjectsScreenOpenFrame> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          bottom: 15.h, // если нужно сдвинуть на 15.h
-        ),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 56),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-            ),
-            backgroundColor: const Color(0xFF4FC3F7),
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (ctx) => const AddProjectOpenFrame()),
-            );
-          },
-          child: const Text(
-            'Add Project',
-            style: TextStyle(fontSize: 18, color: Colors.white),
-          ),
-        ),
-      ),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: const Color(0xffF7F7F7),
+          appBar: CustomAppBarOpenFrame(title: 'Projects'),
+          body: BlocBuilder<ProjectCubit, List<Project>>(
+            builder: (context, projects) {
+              // Если вообще нет проектов
+              if (projects.isEmpty) {
+                return _EmptyProjectsPlaceholder();
+              }
 
-      backgroundColor: const Color(0xffF7F7F7),
-      appBar: CustomAppBarOpenFrame(title: 'Projects'),
-      body: BlocBuilder<ProjectCubit, List<Project>>(
-        builder: (context, projects) {
-          // Если вообще нет проектов
-          if (projects.isEmpty) {
-            return _EmptyProjectsPlaceholder();
-          }
+              // Если есть проекты, сначала фильтруем их
+              final filteredProjects = _filterProjects(projects);
 
-          // Если есть проекты, сначала фильтруем их
-          final filteredProjects = _filterProjects(projects);
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // ---- Ряд кнопок-фильтров ----
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _FilterButton(
+                            label: 'All',
+                            isSelected: (selectedFilter == 'All'),
+                            onTap: () => setState(() => selectedFilter = 'All'),
+                          ),
+                          _FilterButton(
+                            label: 'Better',
+                            isSelected: (selectedFilter == 'Better'),
+                            onTap:
+                                () => setState(() => selectedFilter = 'Better'),
+                          ),
+                          _FilterButton(
+                            label: 'No Change',
+                            isSelected: (selectedFilter == 'No Change'),
+                            onTap:
+                                () => setState(
+                                  () => selectedFilter = 'No Change',
+                                ),
+                          ),
+                          _FilterButton(
+                            label: 'Worse',
+                            isSelected: (selectedFilter == 'Worse'),
+                            onTap:
+                                () => setState(() => selectedFilter = 'Worse'),
+                          ),
+                        ],
+                      ),
+                    ),
 
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                // ---- Ряд кнопок-фильтров ----
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _FilterButton(
-                        label: 'All',
-                        isSelected: (selectedFilter == 'All'),
-                        onTap: () => setState(() => selectedFilter = 'All'),
-                      ),
-                      _FilterButton(
-                        label: 'Better',
-                        isSelected: (selectedFilter == 'Better'),
-                        onTap: () => setState(() => selectedFilter = 'Better'),
-                      ),
-                      _FilterButton(
-                        label: 'No Change',
-                        isSelected: (selectedFilter == 'No Change'),
-                        onTap:
-                            () => setState(() => selectedFilter = 'No Change'),
-                      ),
-                      _FilterButton(
-                        label: 'Worse',
-                        isSelected: (selectedFilter == 'Worse'),
-                        onTap: () => setState(() => selectedFilter = 'Worse'),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // ---- Список или заглушка ----
-                filteredProjects.isEmpty
-                    ? _WhenIsEmpty(
-                      message:
-                          (selectedFilter == 'All')
-                              ? 'No added projects yet'
-                              : 'No "$selectedFilter" projects added yet',
-                    )
-                    : ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: filteredProjects.length,
-                      itemBuilder: (context, index) {
-                        final project = filteredProjects[index];
-                        return _ProjectCard(
-                          project: project,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (ctx) => EditProjectOpenFrame(
-                                      projectIndex: index,
-                                      existingProject: project,
-                                    ),
-                              ),
+                    // ---- Список или заглушка ----
+                    filteredProjects.isEmpty
+                        ? _WhenIsEmpty(
+                          message:
+                              (selectedFilter == 'All')
+                                  ? 'No added projects yet'
+                                  : 'No "$selectedFilter" projects \nadded yet',
+                        )
+                        : ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: filteredProjects.length,
+                          itemBuilder: (context, index) {
+                            final project = filteredProjects[index];
+                            return _ProjectCard(
+                              project: project,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (ctx) => EditProjectOpenFrame(
+                                          projectIndex: index,
+                                          existingProject: project,
+                                        ),
+                                  ),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    ),
-              ],
+                        ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 15,
+
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16, left: 16),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 56),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                backgroundColor: const Color(0xFF4FC3F7),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (ctx) => const AddProjectOpenFrame(),
+                  ),
+                );
+              },
+              child: const Text(
+                'Add Project',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
             ),
-          );
-        },
-      ),
+          ),
+        ),
+      ],
     );
   }
 
