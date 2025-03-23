@@ -6,7 +6,7 @@
 	<integer>11</integer>
 	<key>logs</key>
 	<dict>
-		<key>4F07E081-6B9F-4EB6-9A9E-396422B33763</key>
+		<key>592140A9-74ED-43F9-AFD6-228132924087</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -15,7 +15,7 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>4F07E081-6B9F-4EB6-9A9E-396422B33763.xcactivitylog</string>
+			<string>592140A9-74ED-43F9-AFD6-228132924087.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
@@ -40,15 +40,15 @@
 			<key>signature</key>
 			<string>Building workspace Runner with scheme Runner and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>764208078.25715494</real>
+			<real>764267182.13454401</real>
 			<key>timeStoppedRecording</key>
-			<real>764208090.96020496</real>
+			<real>764267192.99940002</real>
 			<key>title</key>
 			<string>Building workspace Runner with scheme Runner and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>4F07E081-6B9F-4EB6-9A9E-396422B33763</string>
+			<string>592140A9-74ED-43F9-AFD6-228132924087</string>
 		</dict>
-		<key>54B56E9D-69B4-4DDD-9149-C309F8D568C2</key>
+		<key>8E6819CC-FE69-4BEF-BD04-D54866252002</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -57,13 +57,13 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>54B56E9D-69B4-4DDD-9149-C309F8D568C2.xcactivitylog</string>
+			<string>8E6819CC-FE69-4BEF-BD04-D54866252002.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
 			<dict>
 				<key>highLevelStatus</key>
-				<string>S</string>
+				<string>W</string>
 				<key>totalNumberOfAnalyzerIssues</key>
 				<integer>0</integer>
 				<key>totalNumberOfErrors</key>
@@ -71,7 +71,7 @@
 				<key>totalNumberOfTestFailures</key>
 				<integer>0</integer>
 				<key>totalNumberOfWarnings</key>
-				<integer>0</integer>
+				<integer>1</integer>
 			</dict>
 			<key>schemeIdentifier-containerName</key>
 			<string>Runner project</string>
@@ -82,13 +82,13 @@
 			<key>signature</key>
 			<string>Building workspace Runner with scheme Runner and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>764205941.5668</real>
+			<real>764442643.50416803</real>
 			<key>timeStoppedRecording</key>
-			<real>764205954.62595296</real>
+			<real>764442655.96985602</real>
 			<key>title</key>
 			<string>Building workspace Runner with scheme Runner and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>54B56E9D-69B4-4DDD-9149-C309F8D568C2</string>
+			<string>8E6819CC-FE69-4BEF-BD04-D54866252002</string>
 		</dict>
 	</dict>
 </dict>

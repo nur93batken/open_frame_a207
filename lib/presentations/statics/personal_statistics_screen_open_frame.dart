@@ -98,9 +98,9 @@ class _PersonalStatisticsScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildStatBox("Better", Colors.green, "12"),
-        _buildStatBox("Worse", Colors.red, "4"),
-        _buildStatBox("No Change", Colors.grey, "8"),
+        _buildCategoryBox("Better", Colors.green, "12"),
+        _buildCategoryBox("Worse", Colors.red, "4"),
+        _buildCategoryBox("No Change", Colors.grey, "8"),
       ],
     );
   }
@@ -176,6 +176,30 @@ class _PersonalStatisticsScreenState
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 16, color: Colors.white),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryBox(String title, Color color, String category) {
+    return GestureDetector(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(10),
+          border:
+              selectedCategory == category
+                  ? Border.all(
+                    color: Colors.black,
+                    width: 2,
+                  ) // 🔥 Чоңойтуу эффекти
+                  : null,
+        ),
+        child: Text(
+          "$title  ${categoryPercentage[category]?.toStringAsFixed(0) ?? 0}%",
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16, color: Colors.white),
         ),
       ),
     );
