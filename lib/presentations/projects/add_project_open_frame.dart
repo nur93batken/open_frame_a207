@@ -45,26 +45,36 @@ class _AddProjectOpenFrameState extends State<AddProjectOpenFrame> {
       _selectedPhotosBefore.isNotEmpty;
 
   Future<bool> _checkPermissions() async {
-    // Проверяем разрешение на доступ к фото и камере
-    PermissionStatus cameraStatus = await Permission.camera.status;
-    PermissionStatus photoLibraryStatus = await Permission.photos.status;
+    if (Platform.isIOS) {
+      PermissionStatus photosStatus = await Permission.photos.status;
+      PermissionStatus cameraStatus = await Permission.camera.status;
 
-    if (!cameraStatus.isGranted || !photoLibraryStatus.isGranted) {
-      // Запрашиваем разрешения, если их нет
-      PermissionStatus cameraRequest = await Permission.camera.request();
-      PermissionStatus photoLibraryRequest = await Permission.photos.request();
+      if (!photosStatus.isGranted || !cameraStatus.isGranted) {
+        PermissionStatus photosRequest = await Permission.photos.request();
+        PermissionStatus cameraRequest = await Permission.camera.request();
 
-      return cameraRequest.isGranted && photoLibraryRequest.isGranted;
+        return photosRequest.isGranted && cameraRequest.isGranted;
+      }
+      return true;
+    } else {
+      PermissionStatus cameraStatus = await Permission.camera.status;
+      PermissionStatus photoLibraryStatus = await Permission.photos.status;
+
+      if (!cameraStatus.isGranted || !photoLibraryStatus.isGranted) {
+        PermissionStatus cameraRequest = await Permission.camera.request();
+        PermissionStatus photoLibraryRequest =
+            await Permission.photos.request();
+
+        return cameraRequest.isGranted && photoLibraryRequest.isGranted;
+      }
+
+      return true;
     }
-
-    return true; // Разрешения уже даны
   }
 
-  // Методы добавления/удаления фото
   Future<void> _pickImagesBefore() async {
     bool hasPermissions = await _checkPermissions();
     if (!hasPermissions) {
-      // Если разрешения не получены, показываем уведомление
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Permission denied to access photos or camera')),
       );
@@ -72,7 +82,6 @@ class _AddProjectOpenFrameState extends State<AddProjectOpenFrame> {
     }
 
     try {
-      // Если разрешения есть, открываем фото для выбора
       final images = await context.read<ProjectCubit>().pickImages();
       final remainingSlots = 3 - _selectedPhotosBefore.length;
       if (remainingSlots > 0) {
@@ -91,7 +100,6 @@ class _AddProjectOpenFrameState extends State<AddProjectOpenFrame> {
   Future<void> _pickImagesAfter() async {
     bool hasPermissions = await _checkPermissions();
     if (!hasPermissions) {
-      // Если разрешения не получены, показываем уведомление
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Permission denied to access photos or camera')),
       );
@@ -99,7 +107,6 @@ class _AddProjectOpenFrameState extends State<AddProjectOpenFrame> {
     }
 
     try {
-      // Если разрешения есть, открываем фото для выбора
       final images = await context.read<ProjectCubit>().pickImages();
       final remainingSlots = 3 - _selectedPhotosAfter.length;
       if (remainingSlots > 0) {
@@ -655,7 +662,7 @@ class _PhotoItem extends StatelessWidget {
                 'assets/icons/delete.svg',
                 height: 18,
                 width: 18,
-                // ignore: deprecated_member_use
+
                 color: Colors.red,
               ),
             ),

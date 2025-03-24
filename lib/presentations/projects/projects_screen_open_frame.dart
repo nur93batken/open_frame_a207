@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:open_frame_a207/blocs/project_cubit.dart';
+
 import 'package:open_frame_a207/presentations/projects/edit_project_screen_open_frame.dart';
 import 'package:open_frame_a207/presentations/projects/models/poject_model_open_frame.dart';
+
 import 'package:open_frame_a207/widgets/custom_app_bar_open_frame.dart';
 import 'package:open_frame_a207/widgets/show_foto_view_dialog.dart';
 
@@ -21,7 +23,6 @@ class ProjectsScreenOpenFrame extends StatefulWidget {
 }
 
 class _ProjectsScreenOpenFrameState extends State<ProjectsScreenOpenFrame> {
-  // Текущий выбранный фильтр (All / Better / No Change / Worse)
   String selectedFilter = 'All';
 
   @override
@@ -39,7 +40,6 @@ class _ProjectsScreenOpenFrameState extends State<ProjectsScreenOpenFrame> {
               appBar: CustomAppBarOpenFrame(title: 'Projects'),
               body: _buildBody(context, projects),
             ),
-
             // Если есть проекты, показываем закреплённую кнопку "Add Project" снизу
             if (hasProjects)
               Positioned(
@@ -77,9 +77,8 @@ class _ProjectsScreenOpenFrameState extends State<ProjectsScreenOpenFrame> {
     );
   }
 
-  /// Основное содержимое body в зависимости от наличия проектов
   Widget _buildBody(BuildContext context, List<Project> projects) {
-    // Если вообще нет проектов
+    // Если нет проектов, показываем заглушку
     if (projects.isEmpty) {
       return const _EmptyProjectsPlaceholder();
     }
@@ -138,7 +137,6 @@ class _ProjectsScreenOpenFrameState extends State<ProjectsScreenOpenFrame> {
                 return _ProjectCard(
                   project: project,
                   onTap: () {
-                    // Переход на экран редактирования
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -154,7 +152,7 @@ class _ProjectsScreenOpenFrameState extends State<ProjectsScreenOpenFrame> {
               },
             ),
 
-          const SizedBox(height: 75), // Отступ под плавающую кнопку
+          const SizedBox(height: 75),
         ],
       ),
     );
