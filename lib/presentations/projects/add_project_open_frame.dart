@@ -177,7 +177,7 @@ class _AddProjectOpenFrameState extends State<AddProjectOpenFrame> {
           showCupertinoDialogOpenFrame(
             context,
             'Leave the page',
-            'Are you sure you want to get out? This project will not be added',
+            'Are you sure you want to get out?This project will not be added',
             'Leave',
             'Cancel',
             Colors.blue,

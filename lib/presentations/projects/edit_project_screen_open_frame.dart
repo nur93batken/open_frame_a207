@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:open_frame_a207/blocs/project_cubit.dart';
@@ -145,19 +146,31 @@ class _EditProjectOpenFrameState extends State<EditProjectOpenFrame> {
 
   // Функция для запроса разрешений
   Future<bool> _checkPermissions() async {
-    // Проверяем разрешение на доступ к фото и камере
-    PermissionStatus cameraStatus = await Permission.camera.status;
-    PermissionStatus photoLibraryStatus = await Permission.photos.status;
+    if (Platform.isIOS) {
+      PermissionStatus photosStatus = await Permission.photos.status;
+      PermissionStatus cameraStatus = await Permission.camera.status;
 
-    if (!cameraStatus.isGranted || !photoLibraryStatus.isGranted) {
-      // Запрашиваем разрешения, если их нет
-      PermissionStatus cameraRequest = await Permission.camera.request();
-      PermissionStatus photoLibraryRequest = await Permission.photos.request();
+      if (!photosStatus.isGranted || !cameraStatus.isGranted) {
+        PermissionStatus photosRequest = await Permission.photos.request();
+        PermissionStatus cameraRequest = await Permission.camera.request();
 
-      return cameraRequest.isGranted && photoLibraryRequest.isGranted;
+        return photosRequest.isGranted && cameraRequest.isGranted;
+      }
+      return true;
+    } else {
+      PermissionStatus cameraStatus = await Permission.camera.status;
+      PermissionStatus photoLibraryStatus = await Permission.photos.status;
+
+      if (!cameraStatus.isGranted || !photoLibraryStatus.isGranted) {
+        PermissionStatus cameraRequest = await Permission.camera.request();
+        PermissionStatus photoLibraryRequest =
+            await Permission.photos.request();
+
+        return cameraRequest.isGranted && photoLibraryRequest.isGranted;
+      }
+
+      return true;
     }
-
-    return true; // Разрешения уже даны
   }
 
   // Методы добавления/удаления фото
@@ -699,7 +712,12 @@ class _PhotoItem extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(50),
               ),
-              child: const Icon(Icons.delete, color: Colors.red, size: 18),
+              child: SvgPicture.asset(
+                'assets/icons/delete.svg',
+                height: 18,
+                width: 18,
+                color: Colors.red,
+              ),
             ),
           ),
         ),
